@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Button on Image</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('images/bg_web.jpg') no-repeat center center/cover;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .button-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .center-button {
+            width: 80px;
+            height: 80px;
+            background: url('images/logo.png') no-repeat center center/cover;
+            border: none;
+            border-radius: 50%;
+            cursor: grab;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .center-button:active {
+            cursor: grabbing;
+        }
+
+        .orbit-button {
+            width: 50px;
+            height: 50px;
+            background: url('images/logo.png') no-repeat center center/cover;
+            border: none;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .orbit-button:hover {
+            filter: brightness(1.2);
+        }
+
+        .bouncing {
+            animation: bounce 0.2s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button class="center-button" id="center-button"></button>
+        <button class="orbit-button" id="orbit-button-1"></button>
+        <button class="orbit-button" id="orbit-button-2"></button>
+        <button class="orbit-button" id="outer-orbit-button-1"></button>
+        <button class="orbit-button" id="outer-orbit-button-2"></button>
+        <button class="orbit-button" id="outer-orbit-button-3"></button>
+    </div>
+
+    <script>
+        const orbitButtons = document.querySelectorAll('.orbit-button:not([id^="outer"])');
+        const outerOrbitButtons = document.querySelectorAll('.orbit-button[id^="outer"]');
+        const centerButton = document.querySelector('.center-button');
+        let centerX = centerButton.offsetLeft + centerButton.offsetWidth / 2;
+        let centerY = centerButton.offsetTop + centerButton.offsetHeight / 2;
+        const radius = 200; // Equal radius for first orbit
+        const outerRadius = 300; // Radius for second orbit
+        const speedInner = 0.005; // Speed of rotation for the inner orbit
+        const speedOuter = 0.0025; // Half the speed for the outer orbit
+        let angleInner = 0;
+        let angleOuter = 0;
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        function updatePosition() {
+            // Position the inner orbiting buttons
+            const orbitAngles = [angleInner + Math.PI / 2, angleInner - Math.PI / 2];
+            orbitButtons.forEach((button, index) => {
+                const orbitX = centerX + radius * Math.cos(orbitAngles[index]) - button.offsetWidth / 2;
+                const orbitY = centerY + radius * Math.sin(orbitAngles[index]) - button.offsetHeight / 2;
+                button.style.transform = `translate(${orbitX}px, ${orbitY}px)`;
+            });
+
+            // Position the outer orbiting buttons evenly spaced
+            const totalOuterButtons = 3;
+            outerOrbitButtons.forEach((button, index) => {
+                const outerAngle = angleOuter + (2 * Math.PI * index) / totalOuterButtons;
+                const orbitX = centerX + outerRadius * Math.cos(outerAngle) - button.offsetWidth / 2;
+                const orbitY = centerY + outerRadius * Math.sin(outerAngle) - button.offsetHeight / 2;
+                button.style.transform = `translate(${orbitX}px, ${orbitY}px)`;
+            });
+
+            angleInner -= speedInner;
+            angleOuter -= speedOuter;
+            requestAnimationFrame(updatePosition);
+        }
+
+        updatePosition();
+
+        centerButton.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - centerButton.offsetLeft;
+            offsetY = e.clientY - centerButton.offsetTop;
+            centerButton.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const newX = e.clientX - offsetX;
+                const newY = e.clientY - offsetY;
+                centerButton.style.left = `${newX}px`;
+                centerButton.style.top = `${newY}px`;
+                centerX = newX + centerButton.offsetWidth / 2;
+                centerY = newY + centerButton.offsetHeight / 2;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            centerButton.style.cursor = 'grab';
+        });
+
+        window.addEventListener('resize', () => {
+            centerX = centerButton.offsetLeft + centerButton.offsetWidth / 2;
+            centerY = centerButton.offsetTop + centerButton.offsetHeight / 2;
+        });
+    </script>
+</body>
+</html>
